@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1",
+  "source_universe": [
+    {"id": "SRC-001", "label": "Old guide A"},
+    {"id": "SRC-002", "label": "Old guide B"},
+    {"id": "SRC-003", "label": "Historical note"}
+  ],
+  "dispositions": [
+    {
+      "source_ids": ["SRC-001"],
+      "status": "SUCCESSOR",
+      "target_paths": ["docs/new-guide-a.md"]
+    },
+    {
+      "source_ids": ["SRC-002"],
+      "status": "PRESERVED",
+      "target_paths": ["docs/old-guide-b.md"]
+    },
+    {
+      "source_ids": ["SRC-003"],
+      "status": "NOT_APPLICABLE",
+      "reason": "Historical note intentionally excluded from the new guide set"
+    }
+  ]
+}
