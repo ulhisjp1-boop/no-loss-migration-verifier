@@ -1,0 +1,41 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: python -m pip install .
+      - name: Unit and acceptance tests
+        run: python -m unittest discover -s tests -v
+      - name: Installed CLI example
+        run: nlmv verify examples/basic/manifest.json --target-root examples/basic/target
+      - name: JSON example
+        run: nlmv verify examples/basic/manifest.json --target-root examples/basic/target --json
+      - name: Expected closure failure returns exit 1
+        run: >-
+          python -c "import json,pathlib,tempfile,nlmv;
+          d=json.loads(pathlib.Path('examples/basic/manifest.json').read_text(encoding='utf-8'));
+          d['dispositions'][0]['target_paths']=['docs/missing.md'];
+          p=pathlib.Path(tempfile.gettempdir())/'nlmv-expected-fail.json';
+          p.write_text(json.dumps(d),encoding='utf-8');
+          rc=nlmv.main(['verify',str(p),'--target-root','examples/basic/target']);
+          raise SystemExit(0 if rc == 1 else 1)"
