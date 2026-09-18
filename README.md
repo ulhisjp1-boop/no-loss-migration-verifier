@@ -8,7 +8,11 @@ No-Loss Migration Verifier (`nlmv`) is a small, deterministic, read-only CLI for
 
 Requires Python 3.11 or newer.
 
+From a fresh clone:
+
 ```bash
+git clone https://github.com/ulhisjp1-boop/no-loss-migration-verifier.git
+cd no-loss-migration-verifier
 python -m pip install .
 nlmv verify examples/basic/manifest.json --target-root examples/basic/target
 ```
@@ -72,6 +76,12 @@ Tests can pass while a large documentation, repository, or knowledge-base reorga
 NLMV does not perform migrations, modify targets, make network requests, send telemetry, or use credentials. It checks metadata from the manifest plus target-path existence under the supplied `--target-root`.
 
 The manifest itself may contain sensitive labels or paths. NLMV does not upload them, but your own terminal logs and CI logs remain your responsibility. Use synthetic or non-sensitive identifiers in public fixtures.
+
+## Feedback and issues
+
+Usage questions, documentation friction, compatibility problems, suspected false PASS results, and material false FAIL results are useful feedback. Please open a GitHub issue with the exact command, exit code, and a minimal reproduction when possible.
+
+Do **not** post private manifests, credentials, secrets, sensitive repository URLs, proprietary source content, or sensitive absolute paths. Prefer synthetic or redacted identifiers. For security-sensitive reports, follow [SECURITY.md](SECURITY.md) instead of posting details publicly.
 
 ## Development
 
