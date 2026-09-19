@@ -54,7 +54,7 @@ Each disposition contains:
 - `source_ids`: one or more source IDs from the fixed source universe.
 - `status`: one allowed status.
 - `target_paths`: required or forbidden depending on status.
-- `relation`: required for non-1:1 `SUCCESSOR` mappings.
+- `relation`: required for non-1:1 `SUCCESSOR` mappings and for many-to-one `PRESERVED` mappings.
 - `reason`: required for `NOT_APPLICABLE` and `INTENTIONAL_REMOVAL`.
 
 ### Statuses
