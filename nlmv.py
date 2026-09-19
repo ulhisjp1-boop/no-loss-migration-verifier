@@ -192,10 +192,20 @@ def validate_manifest_shape(data: Any) -> dict[str, Any]:
                     elif relation != expected:
                         issues.append(Issue("RELATION_CARDINALITY_MISMATCH", f"dispositions[{i}] relation {relation!r} does not match {expected}", source_ids=tuple(ids), target_paths=tuple(targets)))
         elif status == "PRESERVED":
-            if len(ids) != 1 or len(targets) != 1:
-                issues.append(Issue("PRESERVED_CARDINALITY", f"dispositions[{i}] PRESERVED requires exactly one source_id and one target_path", source_ids=tuple(ids), target_paths=tuple(targets)))
-            if relation is not None and relation != "ONE_TO_ONE":
-                issues.append(Issue("PRESERVED_RELATION", f"dispositions[{i}] PRESERVED relation may only be ONE_TO_ONE", source_ids=tuple(ids), target_paths=tuple(targets)))
+            if len(targets) != 1:
+                issues.append(Issue("PRESERVED_CARDINALITY", f"dispositions[{i}] PRESERVED requires exactly one target_path", source_ids=tuple(ids), target_paths=tuple(targets)))
+            elif ids:
+                expected = _expected_relation(len(ids), 1)
+                if expected == "ONE_TO_ONE":
+                    if relation is not None and relation != "ONE_TO_ONE":
+                        issues.append(Issue("RELATION_CARDINALITY_MISMATCH", f"dispositions[{i}] relation {relation!r} does not match ONE_TO_ONE cardinality", source_ids=tuple(ids), target_paths=tuple(targets)))
+                else:
+                    if relation is None:
+                        issues.append(Issue("RELATION_REQUIRED", f"dispositions[{i}] many-to-one PRESERVED requires relation={expected}", source_ids=tuple(ids), target_paths=tuple(targets)))
+                    elif relation not in ALLOWED_RELATIONS:
+                        issues.append(Issue("UNKNOWN_RELATION", f"dispositions[{i}].relation is not allowed: {relation!r}", source_ids=tuple(ids), target_paths=tuple(targets)))
+                    elif relation != expected:
+                        issues.append(Issue("RELATION_CARDINALITY_MISMATCH", f"dispositions[{i}] relation {relation!r} does not match {expected}", source_ids=tuple(ids), target_paths=tuple(targets)))
         elif status in {"NOT_APPLICABLE", "INTENTIONAL_REMOVAL"}:
             if targets:
                 issues.append(Issue("TARGET_FORBIDDEN", f"dispositions[{i}] {status} must not have target_paths", source_ids=tuple(ids), target_paths=tuple(targets)))

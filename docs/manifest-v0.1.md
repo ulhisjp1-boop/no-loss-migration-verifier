@@ -54,7 +54,7 @@ Each disposition contains:
 - `source_ids`: one or more source IDs from the fixed source universe.
 - `status`: one allowed status.
 - `target_paths`: required or forbidden depending on status.
-- `relation`: required for non-1:1 `SUCCESSOR` mappings.
+- `relation`: required for non-1:1 `SUCCESSOR` mappings and for many-to-one `PRESERVED` mappings.
 - `reason`: required for `NOT_APPLICABLE` and `INTENTIONAL_REMOVAL`.
 
 ### Statuses
@@ -77,7 +77,12 @@ A many-to-one or many-to-many mapping must be expressed in one disposition recor
 
 #### `PRESERVED`
 
-Requires exactly one source ID and exactly one existing target path. If `relation` is present, it may only be `ONE_TO_ONE`.
+Requires one or more source IDs and exactly one existing target path.
+
+- one source ID + one target path is `ONE_TO_ONE`; `relation` may be omitted or explicitly set to `ONE_TO_ONE`;
+- multiple source IDs preserved within the same unchanged physical target require `relation: "MANY_TO_ONE"`.
+
+This supports logical source members such as sections or heading units that remain intact inside one preserved document. `PRESERVED` does not support one-to-many targets; a split belongs under `SUCCESSOR`.
 
 #### `NOT_APPLICABLE`
 

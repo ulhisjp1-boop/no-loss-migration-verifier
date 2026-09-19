@@ -135,6 +135,44 @@ class NLMVAcceptanceTests(unittest.TestCase):
         ])
         self.assertEqual("PASS", self.verify(data)["result"])
 
+    def test_12a_preserved_many_to_one_passes(self):
+        data = self.manifest(source_ids=("A", "B"), dispositions=[
+            {
+                "source_ids": ["A", "B"],
+                "status": "PRESERVED",
+                "relation": "MANY_TO_ONE",
+                "target_paths": ["docs/merged.md"],
+            }
+        ])
+        report = self.verify(data)
+        self.assertEqual("PASS", report["result"])
+        self.assertEqual(2, report["summary"]["preserved_total"])
+
+    def test_12b_preserved_many_to_one_requires_relation(self):
+        data = self.manifest(source_ids=("A", "B"), dispositions=[
+            {
+                "source_ids": ["A", "B"],
+                "status": "PRESERVED",
+                "target_paths": ["docs/merged.md"],
+            }
+        ])
+        report = self.verify(data)
+        self.assertEqual("INVALID", report["result"])
+        self.assertIn("RELATION_REQUIRED", {x["code"] for x in report["issues"]})
+
+    def test_12c_preserved_one_to_many_remains_invalid(self):
+        data = self.manifest(source_ids=("A",), dispositions=[
+            {
+                "source_ids": ["A"],
+                "status": "PRESERVED",
+                "relation": "ONE_TO_MANY",
+                "target_paths": ["docs/split-1.md", "docs/split-2.md"],
+            }
+        ])
+        report = self.verify(data)
+        self.assertEqual("INVALID", report["result"])
+        self.assertIn("PRESERVED_CARDINALITY", {x["code"] for x in report["issues"]})
+
     def test_13_implicit_cross_record_duplicate_target_fails(self):
         data = self.manifest(source_ids=("A", "B"), dispositions=[
             {"source_ids": ["A"], "status": "SUCCESSOR", "target_paths": ["docs/merged.md"]},
