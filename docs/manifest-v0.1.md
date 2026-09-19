@@ -91,6 +91,26 @@ Requires a non-empty `reason`. `target_paths` and `relation` are forbidden.
 
 Represents a still-open disposition. The manifest is structurally valid, but migration closure fails. `target_paths` and `relation` are forbidden.
 
+## Governance and policy layers
+
+NLMV's core PASS/FAIL result is intentionally narrower than repository governance.
+
+For `NOT_APPLICABLE` and `INTENTIONAL_REMOVAL`, v0.1 requires a non-empty `reason`, but NLMV does not decide whether that reason is sufficiently justified, whether it references an approved issue, or whether the change received the right reviewer approval.
+
+Teams that need stronger controls can layer repository policy around the manifest, for example:
+
+- require an issue, PR, or ticket reference in `reason` for non-successor dispositions;
+- use CODEOWNERS or branch-protection review rules for changes to the migration manifest;
+- add non-blocking CI warnings when the proportion of non-successor dispositions is unexpectedly high.
+
+Those controls are intentionally outside the deterministic core verifier because approval policy and acceptable thresholds vary by repository.
+
+## Boundary examples
+
+A successful accounting check does not prove content completeness or semantic preservation. For example, in a one-to-many split, all declared target files may exist while some source content was accidentally omitted during extraction. That remains outside v0.1's guarantee.
+
+Likewise, target existence in v0.1 is defined against local filesystem artifacts under `--target-root`. Database records, headless CMS objects, dynamically served API routes, or targets that exist only after deployment are outside the current target model.
+
 ## Path safety
 
 Target paths must be relative to `--target-root`.
