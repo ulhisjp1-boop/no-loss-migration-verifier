@@ -30,12 +30,8 @@ jobs:
         run: nlmv verify examples/basic/manifest.json --target-root examples/basic/target
       - name: JSON example
         run: nlmv verify examples/basic/manifest.json --target-root examples/basic/target --json
-      - name: Expected closure failure returns exit 1
+      - name: Public failure example catches missing disposition
         run: >-
-          python -c "import json,pathlib,tempfile,nlmv;
-          d=json.loads(pathlib.Path('examples/basic/manifest.json').read_text(encoding='utf-8'));
-          d['dispositions'][0]['target_paths']=['docs/missing.md'];
-          p=pathlib.Path(tempfile.gettempdir())/'nlmv-expected-fail.json';
-          p.write_text(json.dumps(d),encoding='utf-8');
-          rc=nlmv.main(['verify',str(p),'--target-root','examples/basic/target']);
+          python -c "import nlmv;
+          rc=nlmv.main(['verify','examples/failure/missing-disposition.json','--target-root','examples/basic/target']);
           raise SystemExit(0 if rc == 1 else 1)"

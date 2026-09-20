@@ -1,12 +1,29 @@
 # No-Loss Migration Verifier
 
-No-Loss Migration Verifier (`nlmv`) is a small, deterministic, read-only CLI for checking that every member of a fixed migration source universe is explicitly accounted for and that declared successor targets exist.
+A large repository, documentation, or knowledge-base reorganization can finish with every test green while one original item was never moved, preserved, or intentionally retired.
 
-> **Scope:** NLMV verifies migration accounting and target existence. It does **not** prove semantic equivalence between a source item and its successor.
+No-Loss Migration Verifier (`nlmv`) is a small, deterministic, read-only CLI that checks a **fixed source universe** before merge: every source member must be accounted for exactly once, and every declared target must exist.
 
-## Quick start
+> **Scope:** NLMV verifies migration accounting and target existence. It does **not** prove content completeness or semantic equivalence between a source item and its successor.
 
-Requires Python 3.11 or newer.
+Runtime properties:
+
+- Python 3.11+
+- Python standard library only
+- no network calls, telemetry, credentials, or LLM/API dependency
+- no target mutation
+
+## Why not just rely on tests?
+
+Tests usually answer questions about the **new** state: does the reorganized repository build, render, or behave correctly?
+
+NLMV asks a different question about the **old** population:
+
+> What happened to every source item that existed before the migration?
+
+Those checks are complementary. A migration can have valid targets and passing tests while a source member is still missing from the migration accounting.
+
+## See it catch a missing item
 
 From a fresh clone:
 
@@ -14,6 +31,26 @@ From a fresh clone:
 git clone https://github.com/ulhisjp1-boop/no-loss-migration-verifier.git
 cd no-loss-migration-verifier
 python -m pip install .
+```
+
+Run the intentionally incomplete example:
+
+```bash
+nlmv verify examples/failure/missing-disposition.json --target-root examples/basic/target
+```
+
+The command intentionally exits with status `1`. Key output:
+
+```text
+result: FAIL
+source_total: 3
+accounted_total: 2
+missing_disposition_total: 1
+```
+
+Now run the complete example:
+
+```bash
 nlmv verify examples/basic/manifest.json --target-root examples/basic/target
 ```
 
@@ -25,17 +62,52 @@ source_total: 3
 accounted_total: 3
 ```
 
-You can also run directly from source without installing:
-
-```bash
-python nlmv.py verify examples/basic/manifest.json --target-root examples/basic/target
-```
-
 For machine-readable output:
 
 ```bash
 nlmv verify examples/basic/manifest.json --target-root examples/basic/target --json
 ```
+
+## Is NLMV a fit for this migration?
+
+NLMV is useful when:
+
+- you are reorganizing many repository files, docs, knowledge-base entries, sections, or other stable logical source members;
+- files may be split, merged, preserved, intentionally removed, or declared not applicable;
+- existing tests can validate the new state but do not prove that every original source member was accounted for;
+- you want a deterministic pre-merge/local/CI closure check.
+
+NLMV is intentionally **not**:
+
+- a semantic-equivalence checker;
+- an automatic migration tool;
+- an automatic source-universe discovery tool;
+- a database, cloud-resource, CMS-object, or post-deployment target verifier in v0.1.
+
+## Apply it to a real migration
+
+A practical workflow is:
+
+1. **Freeze the source universe before migration.** Give every source member a stable ID. A member can be a file, document, section, heading, or another logical unit you need to account for.
+2. **Record undecided members as `UNRESOLVED`.** The manifest remains valid, but closure fails while any unresolved members remain.
+3. **Replace each unresolved disposition as decisions are made** with `SUCCESSOR`, `PRESERVED`, `NOT_APPLICABLE`, or `INTENTIONAL_REMOVAL`.
+4. **Run NLMV before merge/final integration.** PASS requires exactly-once accounting, zero unresolved members, and all required local targets to exist.
+
+See [docs/manifest-v0.1.md](docs/manifest-v0.1.md) for the complete manifest contract, relation rules, governance boundary, and examples.
+
+## Run it in CI
+
+Until package-registry publication is intentionally enabled, a workflow can install an exact GitHub release directly:
+
+```yaml
+- name: Install NLMV
+  run: python -m pip install "git+https://github.com/ulhisjp1-boop/no-loss-migration-verifier.git@v0.1.1"
+
+- name: Verify migration closure
+  run: nlmv verify migration-manifest.json --target-root .
+```
+
+Pinning the exact release tag keeps the CI behavior explicit. If your environment requires stronger supply-chain pinning, use the exact release commit SHA instead.
 
 ## What it checks
 
@@ -57,7 +129,7 @@ Explicit non-1:1 successor relations:
 
 A 1:1 `SUCCESSOR` relation may omit `relation` and is treated as `ONE_TO_ONE`.
 
-See [docs/manifest-v0.1.md](docs/manifest-v0.1.md) for the complete v0.1 contract.
+`PRESERVED` supports one logical source to one target and explicit many-to-one preservation when multiple logical source members remain intact inside one unchanged physical target.
 
 ## Exit codes
 
