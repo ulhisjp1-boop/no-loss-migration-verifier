@@ -139,10 +139,6 @@ A 1:1 `SUCCESSOR` relation may omit `relation` and is treated as `ONE_TO_ONE`.
 2 = INVALID — input, schema, path-safety, or usage error
 ```
 
-## Why use it?
-
-Tests can pass while a large documentation, repository, or knowledge-base reorganization still loses an item, accounts for one item twice, leaves a disposition unresolved, or points to a missing successor. NLMV makes the source population explicit and turns those closure failures into deterministic CLI output suitable for human review or CI.
-
 ## Read-only and privacy posture
 
 NLMV does not perform migrations, modify targets, make network requests, send telemetry, or use credentials. It checks metadata from the manifest plus target-path existence under the supplied `--target-root`.
